@@ -18,6 +18,9 @@ export function normalizeSample(metrics, receivedAt = Date.now()) {
     breathStable: typeof breath?.stable === 'boolean' ? breath.stable : null,
   };
 }
+export function isDecodedMetrics(value) {
+  return Boolean(value && typeof value === 'object' && !ArrayBuffer.isView(value));
+}
 export function isUsablePulse(sample, elapsedSeconds, validationOk) {
   return elapsedSeconds >= PULSE_WINDOW_SECONDS && validationOk &&
     sample?.pulse !== null && Number.isFinite(sample?.pulse) &&

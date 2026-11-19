@@ -34,7 +34,7 @@ Camera access is requested only when the visitor presses **Enable live camera**.
 - Numerical samples and quality event counts are held **in memory only**, capped at 1,500 samples per session. They are cleared when a new session starts or the app exits. The replay is not persisted to disk.
 - API key is entered manually per session and is not persisted by the app.
 - No user accounts, analytics, advertising, automatic telemetry or external AI services implemented in this application. **Presage SDK telemetry/network behavior is separate and must be disclosed accurately after reviewing the vendor's published policy and actual network use.**
-- Application loads a font from Google Fonts; replace with system fonts to eliminate that network request for a fully offline exhibit.
+- The exhibit uses system font fallbacks and makes no external font request.
 - Not a medical device. No diagnostic or treatment claims. These readings are informational only.
 - A pulse **12-second analysis window** is not a 12-second output transmission delay. Do not call it one.
 - Bad lighting or motion may not always produce obvious pulse changes. Never inject fake artifacts into a plot presented as SDK output.
