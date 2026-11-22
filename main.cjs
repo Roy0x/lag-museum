@@ -30,8 +30,11 @@ function makeWindow() {
     backgroundColor: '#080d17',
     autoHideMenuBar: true,
     webPreferences: {
+      // The custom preload composes the native SmartSpectra preload with our
+      // contextBridge. Electron's sandboxed preload cannot require arbitrary
+      // Node packages, so keep isolation ON but the preload sandbox OFF.
       preload: join(__dirname, 'preload.cjs'),
-      contextIsolation: true, sandbox: true, nodeIntegration: false,
+      contextIsolation: true, sandbox: false, nodeIntegration: false,
     },
   });
   bindSmartSpectraIpc(win);
