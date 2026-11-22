@@ -33,7 +33,7 @@ Camera access is requested only when the visitor presses **Enable live camera**.
 - Local webcam frames are processed by the Presage SDK; the app does not save or transmit video intentionally.
 - Numerical samples and quality event counts are held **in memory only**, capped at 1,500 samples per session. They are cleared when a new session starts or the app exits. The replay is not persisted to disk.
 - API key is entered manually per session and is not persisted by the app.
-- No user accounts, analytics, advertising, automatic telemetry or external AI services implemented in this application. **Presage SDK telemetry/network behavior is separate and must be disclosed accurately after reviewing the vendor's published policy and actual network use.**
+- No user accounts, analytics, advertising, automatic telemetry or external AI services are implemented in this application. SmartSpectra is created with `enableTelemetry: false`; its readiness and measurement checks can still require its service authentication.
 - The exhibit uses system font fallbacks and makes no external font request.
 - Not a medical device. No diagnostic or treatment claims. These readings are informational only.
 - A pulse **12-second analysis window** is not a 12-second output transmission delay. Do not call it one.
@@ -57,6 +57,8 @@ Docs: https://presagetech.com/docs/smartspectra-sdk/nodejs | https://presagetech
 
 
 ## Webcam performance troubleshooting
+
+Before each measurement, after explicit consent, the app runs a local 10-second camera probe and displays the browser-reported camera label, active resolution, observed presentation FPS, and dropped-frame count. It then releases that probe stream and runs SmartSpectra `checkDeviceReadiness()` before beginning a measurement. A non-`ready` verdict does not start measurement; its exact reason remains in the diagnostic panel. Probe diagnostics are shown only in the running session and are not saved.
 
 If SmartSpectra reports `kSustainedLowFrameRate (14)`, it stopped physiological processing because camera frame delivery stayed too slow. This is **not proof the API key failed**. Close other camera apps and CPU-heavy work, use consistent front-facing lighting, check Windows camera settings, reconnect the webcam directly, and start a new session. A webcam preview by itself is not evidence of working physiological measurements.
 

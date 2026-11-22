@@ -1,6 +1,28 @@
-const { app, BrowserWindow, session, shell } = require('electron');
+const { app, BrowserWindow, session, shell, ipcMain } = require('electron');
 const { join } = require('node:path');
 const { bindSmartSpectraIpc } = require('@smartspectra/node-sdk/main');
+const { SmartSpectraSDK, breathingMetrics, cardioMetrics } = require('@smartspectra/node-sdk');
+
+let readinessRunning = false;
+ipcMain.handle('lag-museum:check-device-readiness', async (event, apiKey) => {
+  if (!event.senderFrame.url.startsWith('file://')) throw new Error('Readiness request denied.');
+  if (typeof apiKey !== 'string' || !apiKey.trim()) throw new Error('A SmartSpectra API key is required for readiness.');
+  if (readinessRunning) return { verdict: 'inconclusive', reason: 'A readiness check is already running.' };
+  readinessRunning = true;
+  try {
+    // The renderer SDK owns the key and measurement camera. This separate SDK
+    // instance performs only the documented preflight after the local probe.
+    const sdk = new SmartSpectraSDK({ apiKey, requestedMetrics: [...breathingMetrics, ...cardioMetrics], enableTelemetry: false });
+    try {
+      sdk.useCamera();
+      return await sdk.checkDeviceReadiness();
+    } finally {
+      await sdk.destroy();
+    }
+  } finally {
+    readinessRunning = false;
+  }
+});
 
 function makeWindow() {
   const win = new BrowserWindow({
@@ -8,7 +30,7 @@ function makeWindow() {
     backgroundColor: '#080d17',
     autoHideMenuBar: true,
     webPreferences: {
-      preload: require.resolve('@smartspectra/node-sdk/preload'),
+      preload: join(__dirname, 'preload.cjs'),
       contextIsolation: true, sandbox: true, nodeIntegration: false,
     },
   });
