@@ -54,3 +54,10 @@ Camera access is requested only when the visitor presses **Enable live camera**.
 Read [CODEX_TASK.md](CODEX_TASK.md) for the next implementation steps, failure criteria and required evidence.
 
 Docs: https://presagetech.com/docs/smartspectra-sdk/nodejs | https://presagetech.com/docs/smartspectra-sdk/measurement-quality
+
+
+## Webcam performance troubleshooting
+
+If SmartSpectra reports `kSustainedLowFrameRate (14)`, it stopped physiological processing because camera frame delivery stayed too slow. This is **not proof the API key failed**. Close other camera apps and CPU-heavy work, use consistent front-facing lighting, check Windows camera settings, reconnect the webcam directly, and start a new session. A webcam preview by itself is not evidence of working physiological measurements.
+
+The application displays real SDK errors; never fabricate pulse readings as a fallback. The local app does not persist the API key. Do not commit keys or screenshots showing them. Windows webcam/live SDK verification remains outstanding until performed on hardware.
