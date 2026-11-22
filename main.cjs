@@ -1,4 +1,4 @@
-const { app, BrowserWindow, session } = require('electron');
+const { app, BrowserWindow, session, shell } = require('electron');
 const { join } = require('node:path');
 const { bindSmartSpectraIpc } = require('@smartspectra/node-sdk/main');
 
@@ -13,7 +13,7 @@ function makeWindow() {
     },
   });
   bindSmartSpectraIpc(win);
-  win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  win.webContents.setWindowOpenHandler(({ url }) => { if (url === 'https://physiology.presagetech.com/' || url === 'https://physiology.presagetech.com') void shell.openExternal(url); return { action: 'deny' }; });
   win.webContents.on('will-navigate', (e) => e.preventDefault());
   win.loadFile(join(__dirname, 'index.html'));
 }
