@@ -1,7 +1,7 @@
 const { app, BrowserWindow, session, shell, ipcMain } = require('electron');
 const { join } = require('node:path');
 const { bindSmartSpectraIpc } = require('@smartspectra/node-sdk/main');
-const { SmartSpectraSDK, breathingMetrics, cardioMetrics } = require('@smartspectra/node-sdk');
+const { SmartSpectraSDK, CameraSelection, breathingMetrics, cardioMetrics } = require('@smartspectra/node-sdk');
 
 let readinessRunning = false;
 ipcMain.handle('lag-museum:check-device-readiness', async (event, apiKey) => {
@@ -14,7 +14,8 @@ ipcMain.handle('lag-museum:check-device-readiness', async (event, apiKey) => {
     // instance performs only the documented preflight after the local probe.
     const sdk = new SmartSpectraSDK({ apiKey, requestedMetrics: [...breathingMetrics, ...cardioMetrics], enableTelemetry: false });
     try {
-      sdk.useCamera();
+      // Match the Electron renderer SDK's documented 720p/30 measurement mode.
+      sdk.useCamera(CameraSelection.default, { width: 1280, height: 720, fps: 30 });
       return await sdk.checkDeviceReadiness();
     } finally {
       await sdk.destroy();

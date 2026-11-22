@@ -1,4 +1,12 @@
 export const CAMERA_PROBE_DURATION_MS = 10_000;
+export const SMARTSPECTRA_CAPTURE_REQUEST = Object.freeze({ width: 1280, height: 720, frameRate: 30 });
+
+export function summarizeSmartSpectraCapture({ settings = {}, label = '' } = {}) {
+  const resolution = Number.isFinite(settings.width) && Number.isFinite(settings.height)
+    ? `${settings.width} × ${settings.height}` : 'not reported';
+  const frameRate = Number.isFinite(settings.frameRate) ? `${settings.frameRate} fps` : 'not reported';
+  return `SmartSpectra capture (SDK target: 1280 × 720 at 30 fps)\nDevice: ${label || 'Camera label unavailable'}\nActive track: ${resolution} at ${frameRate}`;
+}
 
 export function summarizeCameraProbe({ settings = {}, label = '', elapsedMs = 0, presentedFrames = 0, totalFrames = null, droppedFrames = null }) {
   const seconds = Math.max(0.001, elapsedMs / 1000);
