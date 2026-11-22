@@ -20,7 +20,7 @@ export async function runCameraProbe(video, { signal, durationMs = CAMERA_PROBE_
   if (signal?.aborted) throw new DOMException('Camera probe cancelled.', 'AbortError');
   const stream = await navigator.mediaDevices.getUserMedia({
     audio: false,
-    video: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30, min: 15 } },
+    video: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } },
   });
   const track = stream.getVideoTracks()[0];
   let callbackId = null, presentedFrames = 0, startedAt = performance.now();
