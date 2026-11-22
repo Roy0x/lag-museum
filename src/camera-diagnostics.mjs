@@ -5,13 +5,13 @@ export function summarizeCameraProbe({ settings = {}, label = '', elapsedMs = 0,
   const fps = presentedFrames / seconds;
   const resolution = Number.isFinite(settings.width) && Number.isFinite(settings.height)
     ? `${settings.width} × ${settings.height}` : 'not reported';
-  const reportedFps = Number.isFinite(settings.frameRate) ? `${settings.frameRate} fps requested` : 'frame rate not reported';
+  const reportedFps = Number.isFinite(settings.frameRate) ? `${settings.frameRate} fps (track setting)` : 'frame rate not reported';
   const device = label || 'Camera label unavailable';
   const dropped = Number.isFinite(droppedFrames) ? String(droppedFrames) : 'not reported by browser';
   const total = Number.isFinite(totalFrames) ? String(totalFrames) : 'not reported by browser';
   return {
     fps,
-    text: `10-second local camera probe\nDevice: ${device}\nResolution: ${resolution}\nTrack setting: ${reportedFps}\nObserved presentation rate: ${fps.toFixed(1)} fps (${presentedFrames} frames / ${seconds.toFixed(1)} s)\nDropped frames: ${dropped} (total video frames: ${total})`,
+    text: `10-second local camera probe\nDevice: ${device}\nResolution: ${resolution}\nTrack setting: ${reportedFps} (request: ideal 30 fps at 640 × 480)\nObserved presentation rate: ${fps.toFixed(1)} fps (${presentedFrames} frames / ${seconds.toFixed(1)} s)\nDropped frames: ${dropped} (total video frames: ${total})`,
   };
 }
 
@@ -20,7 +20,7 @@ export async function runCameraProbe(video, { signal, durationMs = CAMERA_PROBE_
   if (signal?.aborted) throw new DOMException('Camera probe cancelled.', 'AbortError');
   const stream = await navigator.mediaDevices.getUserMedia({
     audio: false,
-    video: { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } },
+    video: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30, min: 15 } },
   });
   const track = stream.getVideoTracks()[0];
   let callbackId = null, presentedFrames = 0, startedAt = performance.now();
