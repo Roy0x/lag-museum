@@ -1,11 +1,11 @@
 export const CAMERA_PROBE_DURATION_MS = 10_000;
-export const SMARTSPECTRA_CAPTURE_REQUEST = Object.freeze({ width: 1280, height: 720, frameRate: 30 });
+export const SMARTSPECTRA_CAPTURE_REQUEST = Object.freeze({ width: 640, height: 480, frameRate: 30 });
 
 export function summarizeSmartSpectraCapture({ settings = {}, label = '' } = {}) {
   const resolution = Number.isFinite(settings.width) && Number.isFinite(settings.height)
     ? `${settings.width} × ${settings.height}` : 'not reported';
   const frameRate = Number.isFinite(settings.frameRate) ? `${settings.frameRate} fps` : 'not reported';
-  return `SmartSpectra capture (SDK target: 1280 × 720 at 30 fps)\nDevice: ${label || 'Camera label unavailable'}\nActive track: ${resolution} at ${frameRate}`;
+  return `SmartSpectra capture (host stream target: 640 × 480 at 30 fps)\nDevice: ${label || 'Camera label unavailable'}\nActive track: ${resolution} at ${frameRate}`;
 }
 
 export function summarizeCameraProbe({ settings = {}, label = '', elapsedMs = 0, presentedFrames = 0, totalFrames = null, droppedFrames = null }) {
@@ -23,7 +23,7 @@ export function summarizeCameraProbe({ settings = {}, label = '', elapsedMs = 0,
   };
 }
 
-export async function runCameraProbe(video, { signal, durationMs = CAMERA_PROBE_DURATION_MS } = {}) {
+export async function runCameraProbe(video, { signal, durationMs = CAMERA_PROBE_DURATION_MS, retainStream = false } = {}) {
   if (!navigator.mediaDevices?.getUserMedia) throw new Error('Camera diagnostics are unavailable in this browser.');
   if (signal?.aborted) throw new DOMException('Camera probe cancelled.', 'AbortError');
   const stream = await navigator.mediaDevices.getUserMedia({
@@ -31,7 +31,7 @@ export async function runCameraProbe(video, { signal, durationMs = CAMERA_PROBE_
     video: { width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } },
   });
   const track = stream.getVideoTracks()[0];
-  let callbackId = null, presentedFrames = 0, startedAt = performance.now();
+  let callbackId = null, presentedFrames = 0, startedAt = performance.now(), completed = false;
   try {
     video.srcObject = stream;
     await video.play();
@@ -47,14 +47,18 @@ export async function runCameraProbe(video, { signal, durationMs = CAMERA_PROBE_
     });
     const quality = video.getVideoPlaybackQuality?.();
     const elapsedMs = performance.now() - startedAt;
-    return summarizeCameraProbe({
+    const summary = summarizeCameraProbe({
       settings: track?.getSettings?.(), label: track?.label, elapsedMs, presentedFrames,
       totalFrames: quality?.totalVideoFrames, droppedFrames: quality?.droppedVideoFrames,
     });
+    completed = true;
+    return retainStream ? { ...summary, stream } : summary;
   } finally {
     if (callbackId != null) video.cancelVideoFrameCallback?.(callbackId);
-    stream.getTracks().forEach(candidate => candidate.stop());
-    video.pause();
-    video.srcObject = null;
+    if (!completed || !retainStream) {
+      stream.getTracks().forEach(candidate => candidate.stop());
+      video.pause();
+      video.srcObject = null;
+    }
   }
 }
